@@ -49,7 +49,55 @@
     </div>
 
   <script>
+    const mainElement = document.querySelector('div #container-body');
 
+    function formatJSON(data){
+      let projects = {}
+
+      data.results.bindings.forEach((result) => {
+        if(projects[result.s.value] == null && result.s.value.includes("/openuai/projeto")){
+          projects[result.s.value] = {};
+        }
+        if (result.s.value.includes("/openuai/projeto")){
+          if (result.p.value == "http://purl.org/dc/terms/title"){
+            projects[result.s.value]["title"] = result.o.value;
+          }
+          if (result.p.value == "http://side.vhost.ifpb.edu.br#startDate"){
+            projects[result.s.value]["startDate"] = result.o.value;
+          }
+          if (result.p.value == "http://side.vhost.ifpb.edu.br#finishDate"){
+            projects[result.s.value]["finishDate"] = result.o.value;
+          }
+        }
+      });
+      return {
+        "projects": Object.values(projects)
+      }
+    }
+
+    let jsonFile = 'data/triplas.json';
+    fetch(jsonFile)
+    .then((response) => response.json())
+    .then((json) => {
+      json = formatJSON(json);
+      let projects = '';
+
+      json["projects"].forEach((object) => {
+        let title = object["title"];
+        let startDate = object["startDate"];
+        let finishDate = object["finishDate"];
+
+        projects += `<div class="">
+                        <div class="">
+                          <h1>${title}</h1>
+                          <p>${startDate}</p>
+                          <p>${finishDate}</p>
+                        </div>
+                      </div>`;
+      });
+
+      mainElement.innerHTML = projects;
+    });
   </script>
   </body>
       <!-- Bootstrap core JavaScript

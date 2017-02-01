@@ -43,7 +43,6 @@
       <p>
         <h1>Professores</h1></br>
       </p>
-
       <div id="container-body">
       </div>
     </div>
@@ -63,22 +62,27 @@
         if(professors[result.s.value] == null && result.s.value.includes("/openuai/professor")){
           professors[result.s.value] = {};
         }
-        if(result.p.value == "http://purl.org/dc/terms/identifier"){
-          professors[result.s.value]["idLattes"] = result.o.value;
-        }
-        if(result.p.value == "http://xmlns.com/foaf/0.1/name"){
-          professors[result.s.value]["name"] = result.o.value;
-        }
-        if(result.p.value == "http://side.vhost.ifpb.edu.br#lattesURL"){
-          professors[result.s.value]["lattesURL"] = result.o.value;
-        }
-        if(result.p.value == "http://side.vhost.ifpb.edu.br#hasInterestIn"){
-          if(professors[result.s.value]["KnowledgeArea"] == undefined)
-          professors[result.s.value]["KnowledgeArea"] = [];
-          else
-          professors[result.s.value]["KnowledgeArea"].push(hasInterestIn[result.o.value]);
-        }
-      });
+
+        if (result.s.value.includes("/openuai/professor")){
+            if(result.p.value == "http://purl.org/dc/terms/identifier"){
+              professors[result.s.value]["idLattes"] = result.o.value;
+            }
+            if(result.p.value == "http://xmlns.com/foaf/0.1/name"){
+              professors[result.s.value]["name"] = result.o.value;
+            }
+            if(result.p.value == "http://side.vhost.ifpb.edu.br#lattesURL"){
+              professors[result.s.value]["lattesURL"] = result.o.value;
+            }
+            if (result.p.value == "http://side.vhost.ifpb.edu.br#hasInterestIn"){
+              if(professors[result.s.value]["KnowledgeArea"] == undefined){
+                professors[result.s.value]["KnowledgeArea"] = [];
+              }
+              else{
+                professors[result.s.value]["KnowledgeArea"].push(hasInterestIn[result.o.value]);
+              }
+            }
+          }
+        });
       return {
         "professors": Object.values(professors)
       }
