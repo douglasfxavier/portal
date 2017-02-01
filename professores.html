@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Portal de Dados Abertos da UAI/IFPB">
+    <meta name="author" content="">
+
+    <title>Portal OpenUAI</title>
+
+    <link href="css/bootstrap.css" rel="stylesheet">  
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Material+Icons" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a id="nome-portal" class="navbar-brand" href="">OpenUAI</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <div id="menu" class="navbar-form navbar-right">
+               <a href="professores.html">Professores  </a>
+               <a href="projetos.html">Projetos</a>
+               <a href="areas.html">Áreas de conhecimento</a>
+            </div>        
+        </div>
+      </div>
+    </nav>
+
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Portal OpenUAI</h1>
+        <p>Portal de Dados Abertos Acadêmicos da UAI - Unidade Acadêmica de Informática do IFPB.</p>
+      </div>
+    </div>
+
+
+    <div class="container">
+      <p>
+        <h1>Professores</h1></br>
+      </p>
+
+      <div id="container-body">
+      </div>
+    </div>
+
+  <script>
+    const mainElement = document.querySelector('div #container-body');
+
+    function formatJSON(data){
+      let professors = {}
+      let hasInterestIn = {}
+      data.results.bindings.forEach((result) => {
+        if(result.p.value == "http://purl.org/dc/terms/title"){
+          hasInterestIn[result.s.value] = result.o.value
+        }
+      });
+      data.results.bindings.forEach((result) => {
+        if(professors[result.s.value] == null && result.s.value.includes("/openuai/professor")){
+          professors[result.s.value] = {};
+        }
+        if(result.p.value == "http://purl.org/dc/terms/identifier"){
+          professors[result.s.value]["idLattes"] = result.o.value;
+        }
+        if(result.p.value == "http://xmlns.com/foaf/0.1/name"){
+          professors[result.s.value]["name"] = result.o.value;
+        }
+        if(result.p.value == "http://side.vhost.ifpb.edu.br#lattesURL"){
+          professors[result.s.value]["lattesURL"] = result.o.value;
+        }
+        if(result.p.value == "http://side.vhost.ifpb.edu.br#hasInterestIn"){
+          if(professors[result.s.value]["KnowledgeArea"] == undefined)
+          professors[result.s.value]["KnowledgeArea"] = [];
+          else
+          professors[result.s.value]["KnowledgeArea"].push(hasInterestIn[result.o.value]);
+        }
+      });
+      return {
+        "professors": Object.values(professors)
+      }
+    }
+
+    let jsonFile = 'data/portaluai.json';
+    fetch(jsonFile)
+    .then((response) => response.json())
+    .then((json) => {
+      json = formatJSON(json);
+      let professors = '';
+
+      json["professors"].forEach((object) => {
+        let name = object["name"];
+        let lattesURL = object["lattesURL"];
+        let knowledgeAreas = object["KnowledgeArea"].map((area) => area);
+        let image = "http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id="+object["idLattes"];
+        knowledgeAreas = knowledgeAreas.join('</span><span>')
+        knowledgeAreas = `<span>${knowledgeAreas}</span>`;
+
+        professors += `<div class="professor">
+                        <div class="image-professor">
+                          <img src="${image}" alt="" width="100px"/>
+                        </div>
+                        <div class="info-professor">
+                          <h1>${name}</h1>
+                          <a href="${lattesURL}">${lattesURL}</a>
+                          <div class="knowledgeArea">
+                            <b>Áreas:</b> ${knowledgeAreas}
+                          </div>
+                        </div>
+                      </div>`;
+      });
+
+      mainElement.innerHTML = professors;
+    });
+  </script>
+  </body>
+      <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="../../dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+</html>
